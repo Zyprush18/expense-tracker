@@ -1,12 +1,14 @@
 package cmd
 
 import (
+	"bufio"
 	"encoding/csv"
 	"fmt"
 	"log"
 	"os"
 	"regexp"
 	"strconv"
+	"strings"
 	"time"
 
 	"github.com/Zyprush18/expense-tracker/model"
@@ -37,30 +39,37 @@ func init() {
 
 func AddExpense(cmd *cobra.Command, args []string) {
 	var expense []model.ExpenseTracker
-	id := 1
+	var id int
 
-	file, err := os.OpenFile("data.csv", os.O_CREATE|os.O_APPEND|os.O_WRONLY, 0644)
+	file, err := os.OpenFile("data.csv", os.O_CREATE|os.O_APPEND|os.O_RDWR, 0644)
 	if err != nil {
 		log.Fatalln(err.Error())
 	}
 	defer file.Close()
 
-	read, err := os.ReadFile("data.csv")
-	if err != nil {
-		log.Fatalln(err.Error())
+	var lines []string
+	scanner := bufio.NewScanner(file)
+	for scanner.Scan() {
+		lines = append(lines, scanner.Text())
 	}
-
-	readfiles := string(read)
 	
-	// search word
+	data := strings.Join(lines, ", ")
+
 	regex := regexp.MustCompile(regexp.QuoteMeta("Id"))
-	matches := regex.FindAllString(readfiles, -1)	
+	matches := regex.FindAllString(data, -1)
 
 	times := time.Now()
 	dates := fmt.Sprintf("%d-%d-%d", times.Year(), times.Month(), times.Day())
 
 	writecsv := csv.NewWriter(file)
 	defer writecsv.Flush()
+
+	if len(lines) < 1 {
+		id = 1
+	}else{
+		id = len(lines)
+	}
+
 
 	expenseReq := model.ExpenseTracker{
 		Id:          strconv.Itoa(id),
@@ -84,5 +93,5 @@ func AddExpense(cmd *cobra.Command, args []string) {
 			log.Println(err.Error())
 		}
 	}
-	fmt.Printf("Expense Added Successfully (ID:%d) \n",id)
+	fmt.Printf("Expense Added Successfully (ID:%d) \n", id)
 }
