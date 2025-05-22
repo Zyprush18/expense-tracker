@@ -16,25 +16,44 @@ import (
 )
 
 var (
+	ids         int16
 	description string
 	amount      int16
 )
 
-var expenseCmd = &cobra.Command{
+var addExpenseCmd = &cobra.Command{
 	Use:   "add",
-	Short: "Get a Expense Tracker",
-	Long:  "this is command to running apps expense tracker",
+	Short: "Add a Expense Tracker",
+	Long:  "this is command to add expense tracker",
 	Run:   AddExpense,
 }
 
+var updateExpenseCmd = &cobra.Command{
+	Use:   "update",
+	Short: "Update a Expense Tracker",
+	Long:  "This is command to update expense by id",
+	Run:   UpdateExpense,
+}
+
 func init() {
-	expenseCmd.Flags().StringVarP(&description, "description", "d", "", "description for expense tracker")
-	expenseCmd.Flags().Int16VarP(&amount, "amount", "a", 0, "amount for expense tracker")
+	// flags add
+	addExpenseCmd.Flags().StringVarP(&description, "description", "d", "", "description for expense tracker")
+	addExpenseCmd.Flags().Int16VarP(&amount, "amount", "a", 0, "amount for expense tracker")
 
-	expenseCmd.MarkFlagRequired("description")
-	expenseCmd.MarkFlagRequired("amount")
+	// require flags add
+	addExpenseCmd.MarkFlagRequired("description")
+	addExpenseCmd.MarkFlagRequired("amount")
 
-	rootCmd.AddCommand(expenseCmd)
+	// flags update
+	updateExpenseCmd.Flags().Int16VarP(&ids, "id", "i", 0, "Id Data Expense Tracker")
+	updateExpenseCmd.Flags().StringVarP(&description, "description", "d", "", "description for expense tracker")
+	updateExpenseCmd.Flags().Int16VarP(&amount, "amount", "a", 0, "amount for expense tracker")
+
+	// require flags update
+	updateExpenseCmd.MarkFlagRequired("id")
+
+	rootCmd.AddCommand(addExpenseCmd)
+	rootCmd.AddCommand(updateExpenseCmd)
 }
 
 func AddExpense(cmd *cobra.Command, args []string) {
@@ -52,7 +71,7 @@ func AddExpense(cmd *cobra.Command, args []string) {
 	for scanner.Scan() {
 		lines = append(lines, scanner.Text())
 	}
-	
+
 	data := strings.Join(lines, ", ")
 
 	regex := regexp.MustCompile(regexp.QuoteMeta("Id"))
@@ -66,10 +85,9 @@ func AddExpense(cmd *cobra.Command, args []string) {
 
 	if len(lines) < 1 {
 		id = 1
-	}else{
+	} else {
 		id = len(lines)
 	}
-
 
 	expenseReq := model.ExpenseTracker{
 		Id:          strconv.Itoa(id),
@@ -81,8 +99,8 @@ func AddExpense(cmd *cobra.Command, args []string) {
 	expense = append(expense, expenseReq)
 
 	if len(matches) < 1 {
-		header := []string{"Id","Date","Description","Amount"}
-		if err := writecsv.Write(header);err != nil {
+		header := []string{"Id", "Date", "Description", "Amount"}
+		if err := writecsv.Write(header); err != nil {
 			log.Println(err.Error())
 		}
 	}
@@ -94,4 +112,9 @@ func AddExpense(cmd *cobra.Command, args []string) {
 		}
 	}
 	fmt.Printf("Expense Added Successfully (ID:%d) \n", id)
+}
+
+// update
+func UpdateExpense(cmd *cobra.Command, args []string) {
+	fmt.Println("Ini update Expense tracker")
 }
