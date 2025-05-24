@@ -33,6 +33,13 @@ var updateExpenseCmd = &cobra.Command{
 	Run:   UpdateExpense,
 }
 
+var deleteExpenseCmd = &cobra.Command{
+	Use:   "delete",
+	Short: "Delete a Expense Tracker",
+	Long:  "This is command to delete expense by id",
+	Run:   DeleteExpense,
+}
+
 func init() {
 	// flags add
 	addExpenseCmd.Flags().StringVarP(&description, "description", "d", "", "description for expense tracker")
@@ -50,8 +57,15 @@ func init() {
 	// require flags update
 	updateExpenseCmd.MarkFlagRequired("id")
 
+	// delete flags
+	deleteExpenseCmd.Flags().Int16VarP(&ids, "id", "i", 0, "Id Data Expense Tracker")
+
+	// require
+	deleteExpenseCmd.MarkFlagRequired("id")
+
 	rootCmd.AddCommand(addExpenseCmd)
 	rootCmd.AddCommand(updateExpenseCmd)
+	rootCmd.AddCommand(deleteExpenseCmd)
 
 }
 
@@ -199,4 +213,59 @@ func UpdateExpense(cmd *cobra.Command, args []string) {
 
 	fmt.Printf("Expense updated Successfully (ID:%d) \n", ids)
 
+}
+
+func DeleteExpense(cmd *cobra.Command, args []string)  {
+	in,err := os.Open("data.csv")
+	if err != nil {
+		log.Fatalln(err.Error())
+	}
+
+	defer in.Close()
+
+	expense := []*model.ExpenseTracker{}
+
+	if err := gocsv.Unmarshal(in, &expense); err != nil{
+		log.Fatalln(err.Error())
+	}
+
+	expenseAfterDelete := []*model.ExpenseTracker{}
+	found := false
+	for _, exp := range expense {
+		expenseId, err := strconv.Atoi(exp.Id)
+		if err != nil {
+			log.Fatalln(err.Error())
+		}
+		if ids != int16(expenseId) {
+			found = true
+			expenseAfterDelete = append(expenseAfterDelete, &model.ExpenseTracker{
+				Id: exp.Id,
+				Date: exp.Date,
+				Description: exp.Description,
+				Amount: exp.Amount,
+			})
+		}
+	}
+
+	if !found {
+		log.Fatalf("expense Tracker for id %d not found \n", ids)
+	}
+
+	file, err := os.OpenFile("data.csv", os.O_WRONLY|os.O_TRUNC, 0644)
+	if err != nil {
+		log.Fatalln(err.Error())
+	}
+
+	defer file.Close()
+
+	data, err := gocsv.MarshalBytes(expenseAfterDelete)
+	if err != nil {
+		log.Fatalln(err.Error())
+	}
+
+	if _,err:= file.Write(data);err != nil {
+		log.Fatalln(err.Error())
+	}
+
+	fmt.Println("Expense deleted successfully")
 }
