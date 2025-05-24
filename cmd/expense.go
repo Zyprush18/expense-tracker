@@ -157,8 +157,46 @@ func UpdateExpense(cmd *cobra.Command, args []string) {
 		log.Fatalln(err.Error())
 	}
 
-	for _, v := range expense {
-		fmt.Println(v.Id)
+	found := false
+	for _, exp := range expense {
+		expenseId, err := strconv.Atoi(exp.Id)
+		if err != nil {
+			log.Fatalln(err.Error())
+		}
+
+		if ids == int16(expenseId) {
+			found = true
+			if description != "" && amount != 0 {
+				exp.Description = description
+				exp.Amount = strconv.Itoa(int(amount))
+			} else if description != "" {
+				exp.Description = description
+			} else if amount != 0 {
+				exp.Amount = strconv.Itoa(int(amount))
+			}
+		}
 	}
+
+	if !found {
+		log.Fatalf("expense Tracker for id %d not found \n", ids)
+	}
+
+	file,err := os.OpenFile("data.csv", os.O_WRONLY|os.O_TRUNC, 0644)
+	if err != nil {
+		log.Fatalln(err.Error())
+	}
+
+	defer file.Close()
+
+	data, err := gocsv.MarshalBytes(expense)
+	if err != nil {
+		log.Fatalln(err.Error())
+	}
+
+	if _,err:= file.Write(data);err != nil {
+		log.Fatalln(err.Error())
+	}
+
+	fmt.Printf("Expense updated Successfully (ID:%d) \n", ids)
 
 }
