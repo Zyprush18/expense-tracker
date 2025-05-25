@@ -22,8 +22,8 @@ Supports adding, updating, deleting, listing, and summarizing expenses by month.
 1. Clone the repo or copy the source code:
 
 ```bash
-git clone https://github.com/yourusername/expense-tracker-go.git
-cd expense-tracker-go
+git clone https://github.com/Zyprush18/expense-tracker.git
+cd expense-tracker
 ```
 
 2. Install dependencies with Go Modules:
