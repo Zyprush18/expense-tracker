@@ -1,5 +1,5 @@
 
-# 🧾 Expense Tracker CLI (Golang)
+# 🧾 Expense Tracker CLI
 
 A simple command-line **Expense Tracker** application built in **Go**, storing expenses in a **CSV file** (`data.csv`).  
 Supports adding, updating, deleting, listing, and summarizing expenses by month.
