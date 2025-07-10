@@ -1,4 +1,3 @@
-
 # 🧾 Expense Tracker CLI
 
 A simple command-line **Expense Tracker** application built in **Go**, storing expenses in a **CSV file** (`data.csv`).  
